@@ -3,30 +3,41 @@ import path from 'path';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import apiRoutes from './routes/api';
+import { mongoConnection } from './instances/mongo';
 
-dotenv.config();
+const initServer = async () => {
+    try {
+        dotenv.config();
 
-const server = express();
+        await mongoConnection()
 
-server.use(cors());
+        const server = express();
 
-server.use(express.static(path.join(__dirname, '../public')));
-server.use(express.urlencoded({ extended: true }));
+        server.use(cors());
 
-server.get('/ping', (req: Request, res: Response) => res.json({ pong: true }));
+        server.use(express.static(path.join(__dirname, '../public')));
+        server.use(express.urlencoded({ extended: true }));
 
-server.use(apiRoutes);
+        server.get('/ping', (req: Request, res: Response) => res.json({ pong: true }));
 
-server.use((req: Request, res: Response) => {
-    res.status(404);
-    res.json({ error: 'Endpoint não encontrado.' });
-});
+        server.use(apiRoutes);
 
-const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-    res.status(400); // Bad Request
-    console.log(err);
-    res.json({ error: 'Ocorreu algum erro.' });
+        server.use((req: Request, res: Response) => {
+            res.status(404);
+            res.json({ error: 'Endpoint não encontrado.' });
+        });
+
+        const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+            res.status(400); // Bad Request
+            console.log(err);
+            res.json({ error: 'Ocorreu algum erro.' });
+        }
+        server.use(errorHandler);
+
+        server.listen(process.env.PORT);
+    } catch (error) {
+        console.log({ error })
+    }
 }
-server.use(errorHandler);
 
-server.listen(process.env.PORT);
+initServer()

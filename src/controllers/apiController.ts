@@ -2,14 +2,14 @@ import { Request, Response } from 'express';
 import { User } from '../models/User';
 
 export const ping = (req: Request, res: Response) => {
-    res.json({pong: true});
+    res.json({pong: true})
 }
 
 export const register = async (req: Request, res: Response) => {
     if(req.body.email && req.body.password) {
         let { email, password } = req.body;
 
-        let hasUser = await User.findOne({where: { email }});
+        let hasUser = await User.findOne({ email });
         if(!hasUser) {
             let newUser = await User.create({ email, password });
 
@@ -18,9 +18,9 @@ export const register = async (req: Request, res: Response) => {
         } else {
             res.json({ error: 'E-mail já existe.' });
         }
+    } else {
+        res.json({ error: 'E-mail e/ou senha não enviados.' });
     }
-
-    res.json({ error: 'E-mail e/ou senha não enviados.' });
 }
 
 export const login = async (req: Request, res: Response) => {
@@ -28,9 +28,7 @@ export const login = async (req: Request, res: Response) => {
         let email: string = req.body.email;
         let password: string = req.body.password;
 
-        let user = await User.findOne({ 
-            where: { email, password }
-        });
+        let user = await User.findOne({ email, password });
 
         if(user) {
             res.json({ status: true });
@@ -42,7 +40,7 @@ export const login = async (req: Request, res: Response) => {
 }
 
 export const list = async (req: Request, res: Response) => {
-    let users = await User.findAll();
+    let users = await User.find();
     let list: string[] = [];
 
     for(let i in users) {
